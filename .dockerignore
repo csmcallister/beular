@@ -1,0 +1,13 @@
+*.jpg
+app/static/uploads/*.png
+.vscode/
+.env/
+env/
+__pycache__/
+.pytest_cache/
+docs/
+.gitignore
+.python-version
+*.csv
+*.ipynb
+*.md

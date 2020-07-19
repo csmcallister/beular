@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block page_id %}index{% endblock %}
+{% block title %}Home{% endblock %}
+{% block description %}Home{% endblock %}
+
+{% block content %}
+<section id="main-content" role="region" aria-labelledby="title">
+    <div class="container">
+      <div class="row align-items-center">
+         <div class="col text-center">
+            <header>
+             <h1 id="title">BEULAR</h1>
+            </header>
+            <p>Binarization of End User License Agreement Regression - BEULAR</p>
+            <p>Using supervised machine learning to identify problematic clauses in End User License Agreements</p>
+         </div>
+      </div>
+    </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/index.js') }}"></script>
+    
+{% endblock %}

@@ -1,0 +1,24 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark navbar-fixed-top sticky">
+  <a class="navbar-brand" href="{{ url_for('main.index') }}">
+      <span class="sr-only">Home - BEULAR</span>
+      <img src="{{ url_for('static', filename='images/favicon.ico') }}" width="30" height="30" alt="BEULAR">
+  </a>
+  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+  </button>
+  
+  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+      
+      <li {% if request.endpoint == 'main.index' %} class='active' {% endif %}>
+          <a class="nav-link nav" href="{{ url_for('main.index') }}">Home</a>
+      </li>
+      <li {% if request.endpoint == 'main.about' %} class='active' {% endif %}>
+          <a class="nav-link nav" href="{{ url_for('main.about') }}">About</a>
+      </li>
+      <li {% if request.endpoint == 'main.ocr' %} class='active' {% endif %}>
+          <a class="nav-link nav" href="{{ url_for('main.scan') }}">Scan Document</a>
+      </li>
+      </ul>
+  </div>
+</nav>

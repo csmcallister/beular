@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+
+    <title>{% block title %}{% endblock %} - BEULAR</title>
+    <meta name="description" content="{% block description %}{% endblock %}">
+                
+    {% include 'includes/head.html' %}    
+    
+  </head>
+  
+  <body id="{% block page_id %}{% endblock %}">
+    
+    <a id="skipnav" href="#skip-target" onclick="document.getElementById('skip-target').focus()">Skip to main content</a>
+    {% include 'includes/nav.html' %}
+    
+    <main class="container content pt-5" role="main">
+      <a name="skip-target" id="skip-target" tabindex='-1' href='#' class="sr-only">Start of Main Content</a>
+      {% block content %} {% endblock %}
+    </main>
+    
+    {% include 'includes/footer.html' %} 
+    
+  </body>
+
+</html>

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block page_id %}scan{% endblock %}
+{% block title %}scan{% endblock %}
+{% block description %}scan a document{% endblock %}
+
+{% block content %}
+
+<section id="main-content" role="region" aria-labelledby="title">
+    <div class="container">
+      <div class="row align-items-center">
+         <div class="col text-center">
+            <header>     
+              <h1 id="title">Scan a Document</h1>
+            </header>
+            {% if not lines %}
+              <p>Upload a document (pdf or Word) and then review the model's predictions.</p>
+              {% include 'includes/upload_doc.html' %}
+            {% else %}
+              <p>BEULAR has made predictions for each clause shown below.</p>
+              <p>Red cards contain language predicted to be non-compliant.</p>
+              <p>Click a card to inspect the model's decision and provide feedback for model retraining.</p>
+            {% endif %}
+            
+         </div>
+      </div>
+
+        {% if filename %}
+        <div class="row align-items-center">
+          <div class="col text-center">
+            <form method="post" action="/scan_doc" enctype="multipart/form-data">
+              <p>
+                <input type="submit" value="Scan Document">
+              </p>
+            </form>
+          </div>
+        {% else %}
+          <div class="col text-left">
+          {% for result in results %}
+            {% if result['y_pred'] == 1 %}
+              <div class="card text-white bg-danger mb-3 hoverable" style="cursor: pointer;">
+                <div class="card-body" data-toggle="modal" data-target="#predictionModal{{ loop.index }}">
+                  {{ result['line'] }}
+                </div>
+              </div>
+            {% else %}
+              <div class="card bg-light mb-3 hoverable" style="cursor: pointer;">
+                <div class="card-body" data-toggle="modal" data-target="#predictionModal{{ loop.index }}">
+                  {{ result['line'] }}
+                </div>
+              </div>
+            {% endif %}
+
+              <!-- Modal -->
+              <div class="modal fade" id="predictionModal{{ loop.index }}" tabindex="-1" role="dialog" aria-labelledby="predictionModalLabel" aria-hidden="true">
+                <div class="modal-dialog" role="document">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="predictionModalLabel">Prediction Details</h5>
+                      <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                      </button>
+                    </div>
+                    <div class="modal-body">
+                      <h5>Original Clause Text</h5>
+                      <p>{{ result['line'] }}</p>
+                      <h5>Prediction Introspection</h5>
+                      <div>{{result['expl']|safe}}</div>
+                      <div class="form-group">
+                        <label for="message-text" class="col-form-label">Feedback:</label>
+                        <textarea class="form-control" id="message-text"></textarea>
+                      </div>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                      <button type="button" class="btn btn-primary">Agree with Prediction</button>
+                      <button type="button" class="btn btn-primary">Disagree with Prediction</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          {% endfor %}
+          </div>
+        {% endif %}
+
+      </div>
+      
+    </div>
+</section>
+
+
+<script src="{{ url_for('static', filename='js/scan.js') }}"></script>
+
+{% endblock %}
