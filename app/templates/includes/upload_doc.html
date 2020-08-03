@@ -20,9 +20,10 @@
 			</p>
 		</dl>
 		<p>
-			<input type="submit" value="Submit">
+			<input type="submit" value="Submit" onclick="$('#parsingDoc').show();">
 		</p>
 	</form>
+	<div id="parsingDoc" style="display:none;"><img src="{{ url_for('static', filename='images/loading.gif') }}"" alt="Loading!"/></div>
 
 {% endif %}
 

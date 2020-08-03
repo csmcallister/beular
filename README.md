@@ -4,9 +4,20 @@ Binarization of End User License Agreement Regression (BEULAR) - a Python Flask 
 
 ## Getting Started
 
-We recommend the following docker setup since the `textract` dependency can be tricky to install, especially on Windows. But for local dev it's useful to install the app as a package with `pip install -e .`
+## Config
 
-To start the app:
+Create a `.env` file to set some app-specific environment variables. For example
+
+```
+FLASK_APP=main.py
+FLASK_ENV=development
+FLASK_DEBUG=1
+SECRET_KEY="somethingSuperSecret!"
+```
+
+## Build
+
+We recommend using Docker since the `textract` dependency can be tricky to install, especially on Windows:
 
 ```bash
 docker-compose up --build
@@ -26,18 +37,8 @@ It will also let you see the test coverage with:
 coverage report
 ```
 
-
 ## TODO
 
- - make sure document clause's are split properly upon upload
- - ignore clause's that are just a few words
- - see why the eli5 explanation is only for the first positive clause
- - Shorten training in SageMaker
-
-## Data Issues
- - A lot of the training data is single words or phrases
- - Data is imbalanced
- - Some positive instances don't make sense:
-    - COPYING, INSTALLING OR USING
-    - Sales Order Form
-    - Appendix  B – Online Tutoring Pricing
+- make sure document clause's are split properly upon upload (check pdfs)
+- For clauses that are less than three words, ensure modal notes the pred override
+- implement feedback callback to submit to s3

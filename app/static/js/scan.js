@@ -11,3 +11,4 @@ $('#predictionModal').on('show.bs.modal', function (event) {
     //modal.find('.modal-title').text('New message to ' + recipient)
     //modal.find('.modal-body input').val(recipient)
 })
+

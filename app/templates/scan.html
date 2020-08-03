@@ -13,12 +13,14 @@
             <header>     
               <h1 id="title">Scan a Document</h1>
             </header>
-            {% if not lines %}
+            {% if not results and not filename%}
               <p>Upload a document (pdf or Word) and then review the model's predictions.</p>
               {% include 'includes/upload_doc.html' %}
+            {% elif not results and filename %}
+              <p>{{filename}} uploaded! Scan the Document to generate predictions for each clause.</p>
             {% else %}
-              <p>BEULAR has made predictions for each clause shown below.</p>
-              <p>Red cards contain language predicted to be non-compliant.</p>
+              <p>BEULAR has made predictions for each clause in {{filename}} shown below.</p>
+              <p>Yellow cards contain language predicted to be non-compliant.</p>
               <p>Click a card to inspect the model's decision and provide feedback for model retraining.</p>
             {% endif %}
             
@@ -28,17 +30,18 @@
         {% if filename %}
         <div class="row align-items-center">
           <div class="col text-center">
-            <form method="post" action="/scan_doc" enctype="multipart/form-data">
+            <form id="scan" method="post" action="/scan_doc" enctype="multipart/form-data">
               <p>
-                <input type="submit" value="Scan Document">
+                <input type="submit" value="Scan Document" onclick="$('#loading').show();">
               </p>
             </form>
+            <div id="loading" style="display:none;"><img src="{{ url_for('static', filename='images/loading.gif') }}"" alt="Loading!"/></div>
           </div>
         {% else %}
           <div class="col text-left">
           {% for result in results %}
             {% if result['y_pred'] == 1 %}
-              <div class="card text-white bg-danger mb-3 hoverable" style="cursor: pointer;">
+              <div class="card text-white bg-warning mb-3 hoverable" style="cursor: pointer;">
                 <div class="card-body" data-toggle="modal" data-target="#predictionModal{{ loop.index }}">
                   {{ result['line'] }}
                 </div>
@@ -52,11 +55,11 @@
             {% endif %}
 
               <!-- Modal -->
-              <div class="modal fade" id="predictionModal{{ loop.index }}" tabindex="-1" role="dialog" aria-labelledby="predictionModalLabel" aria-hidden="true">
+              <div class="modal fade" id="predictionModal{{ loop.index }}" tabindex="-1" role="dialog" aria-labelledby="predictionModalLabel{{ loop.index }}" aria-hidden="true">
                 <div class="modal-dialog" role="document">
                   <div class="modal-content">
                     <div class="modal-header">
-                      <h5 class="modal-title" id="predictionModalLabel">Prediction Details</h5>
+                      <h5 class="modal-title" id="predictionModalLabel{{ loop.index }}">Prediction Details</h5>
                       <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                       </button>
@@ -64,7 +67,7 @@
                     <div class="modal-body">
                       <h5>Original Clause Text</h5>
                       <p>{{ result['line'] }}</p>
-                      <h5>Prediction Introspection</h5>
+                      <h5>Feature Importances</h5>
                       <div>{{result['expl']|safe}}</div>
                       <div class="form-group">
                         <label for="message-text" class="col-form-label">Feedback:</label>

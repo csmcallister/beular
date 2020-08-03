@@ -1,16 +1,11 @@
 FROM python:3.7
 
-COPY . .
-
-RUN pip install -e .
-
-RUN pip install gunicorn
-
 RUN apt-get update && apt-get install -y \
     antiword \
     build-essential \
     ca-certificates \
     ffmpeg \
+    flac \
     gcc \
     gzip \
     lame \
@@ -25,14 +20,20 @@ RUN apt-get update && apt-get install -y \
     musl-dev \
     poppler-utils \
     python-dev \
+    sox \
     ssh \
     swig \
     tar \
+    tesseract-ocr \
     unrtf \
     zlib1g-dev \
     #clean up the apt cache
     && rm -rf /var/lib/apt/lists/*
 
+COPY requirements.txt .
+
+RUN pip install -r requirements.txt
+RUN pip install gunicorn
 RUN python -W ignore -m nltk.downloader punkt
 RUN python -W ignore -m nltk.downloader averaged_perceptron_tagger
 RUN python -W ignore -m nltk.downloader wordnet
@@ -40,6 +41,8 @@ RUN python -W ignore -m nltk.downloader wordnet
 ENV FLASK_APP main.py
 ENV FLASK_ENV development
 ENV FLASK_DEBUG 1
+
+COPY . .
 
 EXPOSE 5000
 

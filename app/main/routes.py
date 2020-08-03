@@ -65,10 +65,11 @@ def upload_doc():
         f.save(file_path)
         text = models.read_doc(file_path)
         filename = 'doc.txt'
-        with open(os.path.join(current_app.config['UPLOAD_FOLDER'], filename), 'w') as txt:
+        txt_file = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
+        with open(txt_file, 'w') as txt:
             txt.write(text)
         os.remove(file_path)
-        return render_template('scan.html', filename=filename)
+        return render_template('scan.html', filename=f.filename)
     else:
         flash('Allowed document types are pdf, doc and docx')
         return redirect(request.url)

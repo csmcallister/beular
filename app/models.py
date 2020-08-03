@@ -74,8 +74,16 @@ def predict(lines, current_app):
         ).replace("\n", "").strip()
         explanations.append(html_explanation)
         expl_dict = format_as_dict(expl)
-        y_probs.append(expl_dict['targets'][0]['proba'])
-        y_preds.append(expl_dict['targets'][0]['target'])
+        targets = expl_dict['targets'][0]
+        target = targets['target']
+        y_pred = 1 if target.startswith('N') else 0
+        y_prob = targets['proba']
+        if len(clean_line.split()) < 3:
+            # one or two words can't be non-compliant
+            y_pred = 0
+            y_prob = 1.0
+        y_preds.append(y_pred)
+        y_probs.append(y_prob)
     y_probs = [f'{round(y_prob, 3) * 100}%' for y_prob in y_probs]
     data = zip(y_preds, lines, clean_lines, y_probs, explanations)
     results = [
@@ -91,11 +99,29 @@ def read_doc(doc_path):
     
     Arguments:
         file_name {str} -- path to a doc
-    """
-    b_text = textract.process(doc_path, encoding='utf-8', errors='ignore')
-    if b_text:
-        text = b_text.decode('utf8', errors='ignore').strip() 
-    else:
-        text = "this is the doc text\nand another clause"
-    text = re.sub("\n+", "\n", text)
+    """    
+    if doc_path.endswith('pdf'):
+        b_text = textract.process(
+            doc_path,
+            method='tesseract',
+            encoding='utf_8',
+            errors='ignore'
+        )
+        text = b_text.decode('utf8', errors='ignore').strip()
+        clauses = []
+        for clause in text.split("\n\n"):
+            if clause.strip():
+                clause = re.sub(
+                    r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]',
+                    '',
+                    clause
+                )
+                clause = clause.replace("\n", " ").strip()
+                clauses.append(clause)
+        text = "\n".join(clauses)
+    else:  
+        b_text = textract.process(doc_path, encoding='utf-8', errors='ignore')
+        text = b_text.decode('utf8', errors='ignore').strip()
+        text = re.sub("\n+", "\n", text)
+    
     return text
