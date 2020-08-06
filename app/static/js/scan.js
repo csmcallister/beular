@@ -3,7 +3,8 @@ $(function () {
   })
 
 $('.modal').on('show.bs.modal', function (event) {
-    let clauseCard = $(event.relatedTarget) // card that triggered the modal
+    // POST feedback to Redis Queue
+    let clauseCard = $(event.relatedTarget) 
     let clause  = clauseCard.text()
     let modal = $(this)
     $('.validation').on('click', (e) => {
@@ -24,6 +25,20 @@ $('.modal').on('show.bs.modal', function (event) {
     })
 })
 
+$('#docList a').on('click', function (e) {
+  e.preventDefault()
+  $(this).tab('show')
+  let doc_id = $(this).text().replace(".", "\\.")
+  
+  $(".to-hide").each(function(){
+    if (! $(this).hasClass('d-none') ) {
+      $(this).addClass('d-none')
+    }
+  })
+  
+  let target = $(`#${doc_id}`)
+  target.toggleClass('d-none')
+})
 
 
 

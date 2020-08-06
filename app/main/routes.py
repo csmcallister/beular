@@ -1,10 +1,9 @@
+import glob
 import os
 
 from flask import (
     current_app,
-    flash,
     jsonify,
-    redirect,
     render_template, 
     request
 )
@@ -34,46 +33,51 @@ def about():
 
 @bp.route('/scan', methods=['GET'])
 def scan():
-    return render_template('scan.html')
+    return render_template('scan.html', results=None)
 
 
 @bp.route('/scan_doc', methods=['POST'])
 def scan_doc():
-    doc_path = os.path.join(current_app.config['UPLOAD_FOLDER'], 'doc.txt')
-    with open(doc_path, 'r') as f:
-        lines = f.readlines()
-    results = models.predict(lines, current_app)
-    return render_template('scan.html', results=results)
+    docs = glob.glob(f"{current_app.config['UPLOAD_FOLDER']}/*.txt")
+    doc_names = []
+    results = []
+    for doc in docs:
+        with open(doc, 'r') as f:
+            lines = f.readlines()
+        _results = models.predict(lines, current_app)
+        results.append(_results)
+        os.remove(doc)
+        doc_name = doc.replace("-", ".").replace(".txt", "")
+        doc_names.append(os.path.basename(doc_name))
+    
+    return render_template('scan.html', results=results, doc_names=doc_names)
 
 
 @bp.route('/upload_doc', methods=['POST'])
 def upload_doc():
-    if 'file' not in request.files:
-        flash("No file part")
-        return redirect(request.url)
-    f = request.files['file']
-    if f.filename == '':
-        flash("No document selected for uploading")
-        return redirect(request.url)
-    if f and allowed_file(f.filename) and secure_filename(f.filename):
-        file_path = os.path.join(
-            current_app.config['UPLOAD_FOLDER'],
-            f.filename
-        )
-        f.save(file_path)
-        text = models.read_doc(file_path)
-        filename = 'doc.txt'
-        txt_file = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-        with open(txt_file, 'w') as txt:
-            txt.write(text)
-        try:
-            os.remove(file_path)
-        except FileNotFoundError:
-            pass
-        return render_template('scan.html', filename=f.filename)
-    else:
-        flash('Allowed document types are pdf, doc and docx')
-        return redirect(request.url)
+    uploaded_files = request.files.getlist('file')
+    filenames = []
+    for i, f in enumerate(uploaded_files):
+        if f and allowed_file(f.filename) and secure_filename(f.filename):
+            filenames.append(f.filename)
+            file_path = os.path.join(
+                current_app.config['UPLOAD_FOLDER'],
+                f.filename
+            )
+            f.save(file_path)
+            text = models.read_doc(file_path)
+            old_name, old_ext = f.filename.split(".")
+            new = f'{old_name}-{old_ext}.txt'
+            txt_file = os.path.join(current_app.config['UPLOAD_FOLDER'], new)
+            
+            with open(txt_file, 'w') as txt:
+                txt.write(text)
+            try:
+                os.remove(file_path)
+            except FileNotFoundError:
+                pass
+
+    return render_template('scan.html', filenames=filenames, results=None)
 
 
 @bp.route('/to_s3', methods=['POST'])
