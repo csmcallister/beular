@@ -10,6 +10,18 @@ from nltk.corpus import wordnet
 from nltk.tokenize import word_tokenize
 import textract
 
+clause_regex = re.compile((
+    r'(\n\s{0,}('
+    r'([i,l,v,I,V,x,X]{1,}[\.,])|'
+    r'(\(\d{1,}\))|'
+    r'([A-z]{1}\.)|'
+    r'([A-z]{1}\))|'
+    r'(\d{1,}[\.,]\d{0,}\.{0,1})|'
+    r'(e)|'
+    r'(\([A-z]\))'
+    r')\s{1,})'
+))
+
 
 def get_wordnet_pos(treebank_tag):
     if treebank_tag.startswith('J'):
@@ -94,6 +106,51 @@ def predict(lines, current_app):
     return results
 
 
+def parse_pdfminer(doc_path):
+    b_text = textract.process(
+        doc_path,
+        method='pdftotext',
+        encoding='utf_8',
+        errors='ignore'
+    )
+    text = b_text.decode('utf8', errors='ignore').strip()
+    
+    formatted_clauses = []
+    clauses = re.split(clause_regex, re.sub(r'  +', '', text))
+    clauses = [c for c in clauses if c]
+    for i, c in enumerate(clauses):
+        c = c.strip()
+        if not c or len(c) < 3:
+            continue
+        elif len(c.split(" ")) < 3:
+            continue
+        if i % 2 == 0:
+            clause = re.sub(r"\n+", " ", c)
+            
+            if clause[0].islower():
+                # this is not the start of a clause
+                # so append to previous
+                formatted_clauses[-1] += ' ' + clause
+            else:
+                # this is the start of the clause
+                # so prepend with clause id
+                if i == 0:
+                    formatted_clauses.append(clause)
+                else:
+                    clause = clauses[i - 1] + ' ' + clause
+                    formatted_clauses.append(clause)
+
+    clauses = []
+    for c in formatted_clauses:
+        c = re.sub(r'\n', ' ', c)
+        if not c.strip() or len(c) < 3:
+            continue
+        elif len(c.split(" ")) < 3:
+            continue
+        clauses.append(c)
+
+    return "\n".join(clauses)       
+
 def read_doc(doc_path):
     """Textract a doc given its path
     
@@ -101,27 +158,9 @@ def read_doc(doc_path):
         file_name {str} -- path to a doc
     """    
     if doc_path.endswith('pdf'):
-        b_text = textract.process(
-            doc_path,
-            method='tesseract',
-            encoding='utf_8',
-            errors='ignore'
-        )
-        text = b_text.decode('utf8', errors='ignore').strip()
-        clauses = []
-        for clause in text.split("\n\n"):
-            if clause.strip():
-                clause = re.sub(
-                    r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\xff]',
-                    '',
-                    clause
-                )
-                clause = clause.replace("\n", " ").strip()
-                clauses.append(clause)
-        text = "\n".join(clauses)
+        # return parse_tesseract(doc_path)
+        return parse_pdfminer(doc_path)
     else:  
         b_text = textract.process(doc_path, encoding='utf-8', errors='ignore')
         text = b_text.decode('utf8', errors='ignore').strip()
-        text = re.sub("\n+", "\n", text)
-    
-    return text
+        return re.sub("\n+", "\n", text)

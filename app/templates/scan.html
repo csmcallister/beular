@@ -9,12 +9,14 @@
 <section id="main-content" role="region" aria-labelledby="title">
     <div class="container">
       <div class="row align-items-center">
+        
          <div class="col text-center">
             <header>     
               <h1 id="title">Scan a Document</h1>
             </header>
             {% if not results and not filename%}
               <p>Upload a document (pdf or Word) and then review the model's predictions.</p>
+              <p>Note that pdf documents will take longer to perform OCR on.</p>
               {% include 'includes/upload_doc.html' %}
             {% elif not results and filename %}
               <p>{{filename}} uploaded! Scan the Document to generate predictions for each clause.</p>
@@ -76,8 +78,8 @@
                     </div>
                     <div class="modal-footer">
                       <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                      <button type="button" class="btn btn-primary">Agree with Prediction</button>
-                      <button type="button" class="btn btn-primary">Disagree with Prediction</button>
+                      <button type="button" class="btn btn-primary validation">Agree with Prediction</button>
+                      <button type="button" class="btn btn-primary validation">Disagree with Prediction</button>
                     </div>
                   </div>
                 </div>

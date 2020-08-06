@@ -1,5 +1,4 @@
 import os
-import time
 
 from flask import (
     current_app,
@@ -7,15 +6,14 @@ from flask import (
     jsonify,
     redirect,
     render_template, 
-    Response, 
-    request,
-    send_from_directory,
-    url_for
+    request
 )
-import requests
+import redis
+from rq import Queue, Connection
 from werkzeug.utils import secure_filename
 
 from app.main import bp
+from app.tasks import create_task
 from app import models
 
 
@@ -68,8 +66,29 @@ def upload_doc():
         txt_file = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
         with open(txt_file, 'w') as txt:
             txt.write(text)
-        os.remove(file_path)
+        try:
+            os.remove(file_path)
+        except FileNotFoundError:
+            pass
         return render_template('scan.html', filename=f.filename)
     else:
         flash('Allowed document types are pdf, doc and docx')
         return redirect(request.url)
+
+
+@bp.route('/to_s3', methods=['POST'])
+def to_s3():
+    feedback = request.form["type"]
+    
+    with Connection(redis.from_url(current_app.config["REDIS_URL"])):
+        q = Queue()
+        task = q.enqueue(create_task, feedback)
+    
+    response_object = {
+        "status": "success",
+        "data": {
+            "task_id": task.get_id()
+        }
+    }
+    
+    return jsonify(response_object), 202

@@ -22,6 +22,7 @@ RUN apt-get update && apt-get install -y \
     python-dev \
     sox \
     ssh \
+    sudo \
     swig \
     tar \
     tesseract-ocr \
@@ -43,7 +44,3 @@ ENV FLASK_ENV development
 ENV FLASK_DEBUG 1
 
 COPY . .
-
-EXPOSE 5000
-
-CMD gunicorn -w 2 -t 180 -b :5000 main:app

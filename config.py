@@ -18,6 +18,15 @@ class Config(object):
     LOG_TO_STDOUT = True
     FLASK_ENV = os.environ.get('FLASK_ENV')
     UPLOAD_FOLDER = os.path.join(basedir, 'app', 'static', 'uploads')
+    try:
+        os.mkdir(UPLOAD_FOLDER)
+    except FileExistsError:
+        pass
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     SECRET_KEY = os.environ.get('SECRET_KEY')
+
+
+    WTF_CSRF_ENABLED = False
+    REDIS_URL = "redis://redis:6379/0"
+    QUEUES = ["default"]

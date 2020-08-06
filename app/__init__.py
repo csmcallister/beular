@@ -28,6 +28,8 @@ def create_app(config_class=Config):
     app.register_error_handler(404, page_not_found)
     app.register_error_handler(500, internal_server_error)
 
+    app.shell_context_processor({"app": app})
+
     if not app.debug and not app.testing:  # pragma: no cover        
         if app.config['LOG_TO_STDOUT']:
             stream_handler = logging.StreamHandler()

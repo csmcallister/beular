@@ -2,7 +2,38 @@ version: '3'
 services:
     web:
         build: .
+        container_name: web
         ports:
             - "5000:5000"
+        command: gunicorn -w 2 -t 2400 -b :5000 main:app
         volumes:
             - .:/code
+        env_file:
+            - .env
+        environment:
+            - FLASK_DEBUG=1
+            - APP_SETTINGS=project.server.config.DevelopmentConfig
+        depends_on:
+            - redis
+    
+    worker:
+        image: beular_web
+        command: python manage.py run_worker
+        volumes:
+            - .:/code
+        env_file:
+            - .env
+        environment:
+            - APP_SETTINGS=project.server.config.DevelopmentConfig
+            - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+            - BUCKET=${BUCKET}
+            - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+            - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+        sysctls:
+            net.core.somaxconn: '511'
+        depends_on:
+            - redis
+            - web
+    
+    redis:
+        image: redis:5.0.7-alpine

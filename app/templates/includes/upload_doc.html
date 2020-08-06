@@ -16,14 +16,14 @@
 	<form method="post" action="/upload_doc" enctype="multipart/form-data">
 		<dl>
 			<p>
-				<input type="file" name="file" autocomplete="off" required>
+				<input id="fileInput" type="file" name="file" autocomplete="off" required>
 			</p>
 		</dl>
 		<p>
-			<input type="submit" value="Submit" onclick="$('#parsingDoc').show();">
+			<input id="fileSubmit" type="submit" value="Upload" onclick="$('#uploading').show();">
 		</p>
 	</form>
-	<div id="parsingDoc" style="display:none;"><img src="{{ url_for('static', filename='images/loading.gif') }}"" alt="Loading!"/></div>
+	<div id="uploadng" style="display:none;"><img src="{{ url_for('static', filename='images/loading.gif') }}"" alt="Loading!"/></div>
 
 {% endif %}
 

@@ -12,7 +12,15 @@ Create a `.env` file to set some app-specific environment variables. For example
 FLASK_APP=main.py
 FLASK_ENV=development
 FLASK_DEBUG=1
-SECRET_KEY="somethingSuperSecret!"
+SECRET_KEY=somethingSuperSecret!
+```
+
+Note that if you'd like to be able to push validated predictions and user feedback to the AWS S3 bucket created in the `beular-api` project, you must also add the following to your `.env` file:
+
+```
+AWS_ACCESS_KEY_ID=123
+AWS_SECRET_ACCESS_KEY=456
+AWS_DEFAULT_REGION=region-name
 ```
 
 ## Build
