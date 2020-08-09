@@ -22,6 +22,8 @@ clause_regex = re.compile((
     r')\s{1,})'
 ))
 
+page_regex = re.compile(r"page \d of \d")
+
 
 def get_wordnet_pos(treebank_tag):
     if treebank_tag.startswith('J'):
@@ -149,7 +151,42 @@ def parse_pdfminer(doc_path):
             continue
         clauses.append(c)
 
-    return "\n".join(clauses)       
+    return "\n".join(clauses)     
+
+
+def parse_word_doc(doc_path):
+    b_text = textract.process(doc_path, encoding='utf-8', errors='ignore')
+    text = b_text.decode('utf8', errors='ignore').strip()
+    text = re.sub("\n+", "\n", text)
+    
+    parsed_clauses = []
+    for clause in text.split("\n"):
+        clause = clause.strip()
+        if "<<" in clause or clause.startswith("%"):
+            continue
+        elif len(clause.split()) <= 2 or clause.endswith(">"):
+            continue
+        elif len(clause.split()) <= 10 and clause.endswith(":"):
+            continue
+        elif all(c.isupper() for c in clause):
+            continue
+        elif clause.lower() == "company end user license master agreement":
+            continue
+        elif page_regex.findall(clause.lower()):
+            continue
+        else:
+            parsed_clauses.append(clause)
+    
+    clauses = []
+    for clause in parsed_clauses:
+        if clause[0].islower() or clause.startswith(("(", "U.S.C")):
+            # this is the continuation of the previous clause
+            clauses[-1] += f' {clause}'
+        else:
+            clauses.append(clause)
+
+    return "\n".join(clauses)
+
 
 def read_doc(doc_path):
     """Textract a doc given its path
@@ -158,9 +195,6 @@ def read_doc(doc_path):
         file_name {str} -- path to a doc
     """    
     if doc_path.endswith('pdf'):
-        # return parse_tesseract(doc_path)
         return parse_pdfminer(doc_path)
     else:  
-        b_text = textract.process(doc_path, encoding='utf-8', errors='ignore')
-        text = b_text.decode('utf8', errors='ignore').strip()
-        return re.sub("\n+", "\n", text)
+        return parse_word_doc(doc_path)
