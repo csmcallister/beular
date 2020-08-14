@@ -1,5 +1,5 @@
 from app import create_app
-from app import models
+from app import model
 
 app = create_app()
 

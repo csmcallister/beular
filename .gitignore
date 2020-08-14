@@ -138,5 +138,4 @@ app/static/uploads/*.png
 *.csv
 docs/
 *.ipynb
-*.joblib
 *.pkl

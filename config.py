@@ -8,7 +8,7 @@ model_path = os.path.join(
     basedir,
     'app',
     'bin',
-    'SGDClassifier-model.joblib'
+    'sgd.joblib' # change this for a different model
 )
 load_dotenv(os.path.join(basedir, '.env'))
 

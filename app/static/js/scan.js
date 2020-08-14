@@ -3,6 +3,9 @@ $(function () {
   })
 
 $('.modal').on('show.bs.modal', function (event) {
+    //remove lengthy eli5 description
+    $('pre').remove()
+
     // POST feedback to Redis Queue
     let clauseCard = $(event.relatedTarget) 
     let clause  = clauseCard.text()

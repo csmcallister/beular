@@ -13,7 +13,7 @@ from werkzeug.utils import secure_filename
 
 from app.main import bp
 from app.tasks import create_task
-from app import models
+from app import model
 
 
 def allowed_file(filename):
@@ -44,7 +44,7 @@ def scan_doc():
     for doc in docs:
         with open(doc, 'r') as f:
             lines = f.readlines()
-        _results = models.predict(lines, current_app)
+        _results = model.predict(lines, current_app)
         results.append(_results)
         os.remove(doc)
         doc_name = doc.replace("-", ".").replace(".txt", "")
@@ -65,7 +65,7 @@ def upload_doc():
                 f.filename
             )
             f.save(file_path)
-            text = models.read_doc(file_path)
+            text = model.read_doc(file_path)
             old_name, old_ext = f.filename.split(".")
             new = f'{old_name}-{old_ext}.txt'
             txt_file = os.path.join(current_app.config['UPLOAD_FOLDER'], new)
