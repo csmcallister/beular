@@ -139,3 +139,4 @@ app/static/uploads/*.png
 docs/
 *.ipynb
 *.pkl
+*.bin
