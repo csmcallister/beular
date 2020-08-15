@@ -10,7 +10,7 @@ model_path = os.path.join(
     basedir,
     'app',
     'bin',
-    'model.bin'  # change this for a different model
+    'sgd.joblib'  # change this for a different model
 )
 load_dotenv(os.path.join(basedir, '.env'))
 
