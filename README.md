@@ -66,11 +66,11 @@ docker-compose up --build
 This will verify that everything is working as expected:
 
 ```bash
-coverage run -m pytest
+python -m coverage run -m pytest
 ```
 
 It will also let you see the test coverage with:
 
 ```bash
-coverage report
+python -m coverage report
 ```

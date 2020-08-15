@@ -1,6 +1,3 @@
-import resource
-import sys
-
 import redis
 from rq import Connection, Worker
 from flask.cli import FlaskGroup

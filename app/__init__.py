@@ -4,7 +4,6 @@ import os
 from os import path
 
 from flask import Flask, render_template
-import nltk
 
 from config import Config
 

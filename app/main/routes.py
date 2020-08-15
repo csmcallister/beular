@@ -17,8 +17,9 @@ from app import model
 
 
 def allowed_file(filename):
+    allowed = current_app.config['ALLOWED_EXTENSIONS']
     return '.' in filename and \
-        filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+        filename.rsplit('.', 1)[1].lower() in allowed
 
 
 @bp.route('/', methods=['GET'])

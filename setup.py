@@ -9,6 +9,7 @@ setup(
     install_requires=[
         'boto3==1.14.34',
         'contractions==0.0.25',
+        'coverage==5.2.1',
         'dill==0.3.2',
         'eli5==0.10.1',
         'fasttext==0.9.2',
@@ -21,7 +22,7 @@ setup(
         'pandas>=1.0.5',
         'pytest==5.4.3',
         'python-dotenv==0.13.0',
-        'redis==3.3.11,
+        'redis==3.3.11',
         'rq==1.1.0',
         'requests==2.23.0',
         'scikit-learn==0.21.3',
