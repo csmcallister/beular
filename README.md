@@ -15,13 +15,23 @@ FLASK_DEBUG=1
 SECRET_KEY=somethingSuperSecret!
 ```
 
-Note that if you'd like to be able to push validated predictions and user feedback to the AWS S3 bucket created in the `beular-api` project, you must also add the following to your `.env` file:
+### AWS Integration
+
+If you'd like to be able to push validated predictions and user feedback to the AWS S3 bucket created in the `beular-api` project, you must also add the following to your `.env` file:
 
 ```ini
 AWS_ACCESS_KEY_ID=123
 AWS_SECRET_ACCESS_KEY=456
 AWS_DEFAULT_REGION=region-name
 ```
+
+And if you'd like to use a model you deployed in AWS using the beular-api project, you need to additionally set the uri for that api in your .env file:
+
+```ini
+MODEL_URI="https://your-aws-api.com/predict
+```
+
+### Model Selection
 
 And you can select which model to use by adjusting the following line in `config.py`:
 
@@ -33,6 +43,15 @@ model_path = os.path.join(
     'sgd.joblib' # change this for a different model
 )
 ```
+
+You can choose from the following models:
+
+- BlazingText - model.bin
+- Logistic Regression - sgd.joblib
+- Gradient Boosting Classifier - gbc.joblib
+- Random Forest Classifier - rfc.joblib
+
+>Note that the BlazingText model is very large, so be sure you've got enough memory on your machine for it to load
 
 ## Build
 

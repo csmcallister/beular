@@ -1,20 +1,40 @@
 import os
 
 from dotenv import load_dotenv
+import fasttext
 import joblib
+import numpy as np
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 model_path = os.path.join(
     basedir,
     'app',
     'bin',
-    'sgd.joblib' # change this for a different model
+    'model.bin'  # change this for a different model
 )
 load_dotenv(os.path.join(basedir, '.env'))
 
 
 class Config(object):
-    ESTIMATOR = joblib.load(model_path)
+    MODEL_URI = os.environ.get('MODEL_URI')
+    
+    if not os.environ.get('WORKER'):
+        if model_path.endswith('bin'):
+            estimator = fasttext.load_model(model_path)
+            ESTIMATOR = estimator
+            MEAN_VEC = np.load(
+                os.path.join(
+                    basedir,
+                    'app',
+                    'bin',
+                    'mean_pos_sample_tfidf_vec.npy'
+                )
+            )
+            BT = True
+        else:
+            ESTIMATOR = joblib.load(model_path)
+            BT = False
+    
     LOG_TO_STDOUT = True
     FLASK_ENV = os.environ.get('FLASK_ENV')
     UPLOAD_FOLDER = os.path.join(basedir, 'app', 'static', 'uploads')

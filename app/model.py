@@ -1,3 +1,4 @@
+import base64
 import re
 
 import contractions
@@ -8,6 +9,9 @@ import nltk
 from nltk.stem import WordNetLemmatizer 
 from nltk.corpus import wordnet
 from nltk.tokenize import word_tokenize
+import numpy as np
+import requests
+from sklearn import metrics
 import textract
 
 clause_regex = re.compile((
@@ -67,7 +71,83 @@ def clean_text(text):
     return words.strip()
 
 
-def predict(lines, current_app):
+def gen_html(token_to_sim, y_pred, y_prob):
+    elems = ''
+
+    for token, sim in token_to_sim:
+        sim = sim[0][0]
+        opacity = np.clip(abs(sim), .5, 1)
+        hue = 0 if sim < 0 else 120
+        light = np.clip(round(1 - abs(sim), 2) * 100, 50, 97)
+        
+        elem = (
+            f'<span style="background-color: hsl({hue}, 100.00%, {light}%);'
+            f' opacity: {opacity}" title="{sim}">{token}</span>'
+        )
+        
+        elems += elem + ' '
+    p = "Compliant" if y_pred == 0 else "NonCompliant"
+
+    y_prob = f'{round(np.clip(y_prob, 0, 1), 3) * 100}%'
+    html_expl = f"<p>Predicted as {p}, with a probability of {y_prob}.</p>"
+    html_expl += elems
+    
+    return html_expl
+
+
+def token_to_cosine_sim(tokens, mean_vec, estimator, current_app):
+    token_to_sim = []
+    for token in tokens:
+        
+        token_vec = estimator.get_word_vector(token).reshape(1, -1)
+        
+        sim = metrics.pairwise.cosine_similarity(
+            mean_vec.reshape(1, -1),
+            token_vec   
+        )
+        
+        token_to_sim.append((token, sim))
+
+    return token_to_sim
+
+
+def bt_predict(lines, current_app):    
+    mean_vec = current_app.config['MEAN_VEC']
+    estimator = current_app.config['ESTIMATOR']
+    
+    explanations = []
+    y_preds = []
+    y_probs = []
+    for line in lines:
+        tokens = ' '.join(nltk.word_tokenize(line.lower()))
+        pred, prob = estimator.predict(tokens)
+        pred = int(pred[0][-1])
+        prob = prob[0]
+
+        token_to_sim = token_to_cosine_sim(
+            tokens.split(),
+            mean_vec,
+            estimator,
+            current_app
+        )
+
+        html_expl = gen_html(token_to_sim, pred, prob)
+        explanations.append(html_expl)
+        y_preds.append(pred)
+        
+        y_probs.append(f'{round(prob, 3) * 100}%')
+    
+    data = zip(y_preds, lines, lines, y_probs, explanations)
+    results = [
+        dict(
+            y_pred=y, line=l, clean_line=cl, y_prob=y_prob, expl=expl
+        ) for y, l, cl, y_prob, expl in data
+    ]
+    
+    return results
+
+
+def sklearn_predict(lines, current_app):
     estimator = current_app.config['ESTIMATOR']
     clean_lines = [clean_text(line) for line in lines]
     explanations = []
@@ -107,6 +187,40 @@ def predict(lines, current_app):
     ]
     return results
 
+
+def api_predict(lines, current_app):
+    y_preds = []
+    y_probs = []
+    explanations = []
+    for line in lines:
+        # model wants csv content, so prevent issues
+        line = line.replace(",", "").replace("\n", "")
+        uri = current_app.config['MODEL_URI']
+        r = requests.post(uri, data=line.encode(encoding='utf-8'))
+        data = r.json()[0]
+        y_preds.append(int(data.get('prediction')))
+        y_probs.append(data.get('pred_prob'))
+        base64_expl_bytes = data.get('expl').encode('utf-8')
+        expl = base64.b64decode(base64_expl_bytes).decode('utf-8')
+        explanations.append(expl)
+    data = zip(y_preds, lines, lines, y_probs, explanations)
+    results = [
+        dict(
+            y_pred=y, line=l, clean_line=cl, y_prob=y_prob, expl=expl
+        ) for y, l, cl, y_prob, expl in data
+    ]
+    return results
+
+
+def predict(lines, current_app):
+    if current_app.config['MODEL_URI']:
+        return api_predict(lines, current_app)
+    else:
+        if current_app.config['BT']:
+            return bt_predict(lines, current_app)
+        else:
+            return sklearn_predict(lines, current_app)
+    
 
 def parse_pdfminer(doc_path):
     b_text = textract.process(
