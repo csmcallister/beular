@@ -1,12 +1,12 @@
 # BEULAR
 
-Binarization of End User License Agreement Regression (BEULAR) - a Python Flask application that provides a UI for a supervised machine learning model that can identify problematic clauses in End User License Agreements.
+Binarization of End User License Agreement Regression (BEULAR) - a Python Flask application that provides a UI for supervised machine learning models that can identify problematic clauses in End User License Agreements.
 
 ## Getting Started
 
 ## Config
 
-Create a `.env` file to set some app-specific environment variables. For example
+Create a `.env` file to set some app-specific environment variables. For example, a bare minimum setup:
 
 ```ini
 FLASK_APP=main.py
@@ -25,7 +25,7 @@ AWS_SECRET_ACCESS_KEY=456
 AWS_DEFAULT_REGION=region-name
 ```
 
-And if you'd like to use a model you deployed in AWS using the beular-api project, you need to additionally set the uri for that api in your .env file:
+And if you'd like to use a model you deployed behind a REST API in AWS using the [beular-api project](https://github.com/csmcallister/beular-api), you need to additionally set the uri for that api in your .env file:
 
 ```ini
 MODEL_URI="https://your-aws-api.com/predict
@@ -46,7 +46,7 @@ model_path = os.path.join(
 
 You can choose from the following models:
 
-- BlazingText - model.bin
+- BlazingText - model.bin (you must download this file from [here](https://drive.google.com/file/d/1G-oWjBq5iuD6N8b7fiaSo-hVhSZ_Z1WE/view?usp=sharing) since it's over 1.2GB in size)
 - Logistic Regression - sgd.joblib
 - Gradient Boosting Classifier - gbc.joblib
 - Random Forest Classifier - rfc.joblib
