@@ -31,6 +31,8 @@ And if you'd like to use a model you deployed behind a REST API in AWS using the
 MODEL_URI="https://your-aws-api.com/predict
 ```
 
+>Note that if you're using the BlazingText model, you also need a local copy of the model (i.e. model.bin) and you should specify this model in the config as well.
+
 ### Model Selection
 
 And you can select which model to use by adjusting the following line in `config.py`:

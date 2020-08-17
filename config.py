@@ -10,7 +10,7 @@ model_path = os.path.join(
     basedir,
     'app',
     'bin',
-    'sgd.joblib'  # change this for a different model
+    'model.bin'  # change this for a different model
 )
 load_dotenv(os.path.join(basedir, '.env'))
 
@@ -32,7 +32,8 @@ class Config(object):
             )
             BT = True
         else:
-            ESTIMATOR = joblib.load(model_path)
+            if not MODEL_URI:
+                ESTIMATOR = joblib.load(model_path)
             BT = False
     
     LOG_TO_STDOUT = True

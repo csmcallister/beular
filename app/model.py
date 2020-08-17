@@ -111,6 +111,18 @@ def token_to_cosine_sim(tokens, mean_vec, estimator, current_app):
     return token_to_sim
 
 
+def explain_bt(pred, prob, tokens, mean_vec, current_app, estimator):
+    token_to_sim = token_to_cosine_sim(
+        tokens.split(),
+        mean_vec,
+        estimator,
+        current_app
+    )
+
+    html_expl = gen_html(token_to_sim, pred, prob)
+    return html_expl
+
+
 def bt_predict(lines, current_app):    
     mean_vec = current_app.config['MEAN_VEC']
     estimator = current_app.config['ESTIMATOR']
@@ -119,19 +131,20 @@ def bt_predict(lines, current_app):
     y_preds = []
     y_probs = []
     for line in lines:
+        if not line.strip():
+            continue
         tokens = ' '.join(nltk.word_tokenize(line.lower()))
         pred, prob = estimator.predict(tokens)
         pred = int(pred[0][-1])
         prob = prob[0]
-
-        token_to_sim = token_to_cosine_sim(
-            tokens.split(),
+        html_expl = explain_bt(
+            pred,
+            prob,
+            tokens,
             mean_vec,
-            estimator,
-            current_app
+            current_app,
+            estimator
         )
-
-        html_expl = gen_html(token_to_sim, pred, prob)
         explanations.append(html_expl)
         y_preds.append(pred)
         
@@ -188,14 +201,14 @@ def sklearn_predict(lines, current_app):
     return results
 
 
-def api_predict(lines, current_app):
+def sklearn_api_predict(lines, current_app):
+    uri = current_app.config['MODEL_URI']
     y_preds = []
     y_probs = []
     explanations = []
     for line in lines:
         # model wants csv content, so prevent issues
         line = line.replace(",", "").replace("\n", "")
-        uri = current_app.config['MODEL_URI']
         r = requests.post(uri, data=line.encode(encoding='utf-8'))
         data = r.json()[0]
         y_preds.append(int(data.get('prediction')))
@@ -210,6 +223,56 @@ def api_predict(lines, current_app):
         ) for y, l, cl, y_prob, expl in data
     ]
     return results
+
+
+def bt_api_predict(lines, current_app):
+    mean_vec = current_app.config['MEAN_VEC']
+    estimator = current_app.config['ESTIMATOR']
+    
+    uri = current_app.config['MODEL_URI']
+    payload = {'instances': []}
+    for line in lines:
+        if not line.strip():
+            continue
+        line = " ".join(nltk.word_tokenize(line))
+        payload['instances'].append(line)
+    r = requests.post(uri, json=payload)
+    data = r.json()
+
+    explanations = []
+    y_preds = []
+    y_probs = []
+    for i, d in enumerate(data):
+        pred = int(d['label'][0][-1])
+        prob = np.clip(d['prob'][0], 0, 1)
+        tokens = payload['instances'][i]
+        html_expl = explain_bt(
+            pred,
+            prob,
+            tokens,
+            mean_vec,
+            current_app,
+            estimator
+        )
+        explanations.append(html_expl)
+        y_preds.append(pred)
+        y_probs.append(y_probs)
+
+    data = zip(y_preds, lines, lines, y_probs, explanations)
+    results = [
+        dict(
+            y_pred=y, line=l, clean_line=cl, y_prob=y_prob, expl=expl
+        ) for y, l, cl, y_prob, expl in data
+    ]
+
+    return results
+    
+
+def api_predict(lines, current_app):
+    if current_app.config['BT']:
+        return bt_api_predict(lines, current_app)
+    else:
+        return sklearn_api_predict(lines, current_app)
 
 
 def predict(lines, current_app):
