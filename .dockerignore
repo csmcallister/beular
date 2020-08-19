@@ -10,7 +10,7 @@ docs/
 *.csv
 *.ipynb
 *.md
-*.bin
-rfc.joblib
-gbc.joblib
-*.npy
+**/*.bin
+**/rfc.joblib
+**/gbc.joblib
+**/*.npy

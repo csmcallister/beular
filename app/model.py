@@ -28,6 +28,24 @@ clause_regex = re.compile((
 
 page_regex = re.compile(r"page \d of \d")
 
+stopwords = {
+    'ourselves', 'hers', 'between', 'yourself', 'but', 'again', 'there',
+    'about', 'once', 'during', 'out', 'very', 'having', 'with', 'they',
+    'own', 'an', 'be', 'some', 'for', 'do', 'its', 'yours', 'such', 'into',
+    'of', 'most', 'itself', 'other', 'off', 'is', 's', 'am', 'or', 'who',
+    'as', 'from', 'him', 'each', 'the', 'themselves', 'until', 'below',
+    'are', 'we', 'these', 'your', 'his', 'through', 'don', 'nor', 'me',
+    'were', 'her', 'more', 'himself', 'this', 'down', 'should', 'our',
+    'their', 'while', 'above', 'both', 'up', 'to', 'ours', 'had', 'she',
+    'all', 'no', 'when', 'at', 'any', 'before', 'them', 'same', 'and',
+    'been', 'have', 'in', 'will', 'on', 'does', 'yourselves', 'then',
+    'that', 'because', 'what', 'over', 'why', 'so', 'can', 'did', 'not',
+    'now', 'under', 'he', 'you', 'herself', 'has', 'just', 'where',
+    'too', 'only', 'myself', 'which', 'those', 'i', 'after', 'few',
+    'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by',
+    'doing', 'it', 'how', 'further', 'was', 'here', 'than'
+}
+
 
 def get_wordnet_pos(treebank_tag):
     if treebank_tag.startswith('J'):
@@ -162,15 +180,16 @@ def bt_predict(lines, current_app):
 
 def sklearn_predict(lines, current_app):
     estimator = current_app.config['ESTIMATOR']
-    #TODO use model vectorizer functio
-    clean_lines = [clean_text(line) for line in lines]
     explanations = []
     y_preds = []
     y_probs = []
-    for clean_line in clean_lines:
+    for line in lines:
+        line = ' '.join(t for t in line.split() if t not in stopwords)
+        if not line.strip():
+            continue
         expl = eli5.explain_prediction(
             estimator.steps[-1][1],
-            clean_line,
+            line,
             estimator.steps[0][1],
             target_names=['Compliant', 'Not Compliant'],
             top=10
@@ -186,14 +205,14 @@ def sklearn_predict(lines, current_app):
         target = targets['target']
         y_pred = 1 if target.startswith('N') else 0
         y_prob = targets['proba']
-        if len(clean_line.split()) < 3:
+        if len(line.split()) < 3:
             # one or two words can't be non-compliant
             y_pred = 0
             y_prob = 1.0
         y_preds.append(y_pred)
         y_probs.append(y_prob)
     y_probs = [f'{round(y_prob, 3) * 100}%' for y_prob in y_probs]
-    data = zip(y_preds, lines, clean_lines, y_probs, explanations)
+    data = zip(y_preds, lines, lines, y_probs, explanations)
     results = [
         dict(
             y_pred=y, line=l, clean_line=cl, y_prob=y_prob, expl=expl
