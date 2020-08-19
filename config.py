@@ -8,9 +8,8 @@ import numpy as np
 basedir = os.path.abspath(os.path.dirname(__file__))
 model_path = os.path.join(
     basedir,
-    'app',
-    'bin',
-    'model.bin'  # change this for a different model
+    'estimators',
+    'sgd.joblib'  # change this for a different model
 )
 load_dotenv(os.path.join(basedir, '.env'))
 
@@ -25,8 +24,7 @@ class Config(object):
             MEAN_VEC = np.load(
                 os.path.join(
                     basedir,
-                    'app',
-                    'bin',
+                    'estimators',
                     'mean_pos_sample_tfidf_vec.npy'
                 )
             )
@@ -46,8 +44,7 @@ class Config(object):
     ALLOWED_EXTENSIONS = {'pdf', 'doc', 'docx', 'txt'}
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024
     SECRET_KEY = os.environ.get('SECRET_KEY')
-
-
-    WTF_CSRF_ENABLED = False
+    # REDIS
+    # WTF_CSRF_ENABLED = False
     REDIS_URL = "redis://redis:6379/0"
     QUEUES = ["default"]

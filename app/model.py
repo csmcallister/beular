@@ -162,6 +162,7 @@ def bt_predict(lines, current_app):
 
 def sklearn_predict(lines, current_app):
     estimator = current_app.config['ESTIMATOR']
+    #TODO use model vectorizer functio
     clean_lines = [clean_text(line) for line in lines]
     explanations = []
     y_preds = []

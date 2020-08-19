@@ -83,9 +83,18 @@ def upload_doc():
 
 @bp.route('/to_s3', methods=['POST'])
 def to_s3():
+    if not os.environ.get('BUCKET'):
+        response_object = {
+            "status": "error",
+            "data": {
+                "message": "REDIS_URL not provided to app"
+            }
+        }
+        return jsonify(response_object), 202
+
     feedback = request.form["type"]
     
-    with Connection(redis.from_url(current_app.config["REDIS_URL"])):
+    with Connection(redis.from_url(current_app.config['REDIS_URL'])):
         q = Queue()
         task = q.enqueue(create_task, feedback)
     

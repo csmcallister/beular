@@ -43,4 +43,7 @@ ENV FLASK_APP main.py
 ENV FLASK_ENV development
 ENV FLASK_DEBUG 1
 
-COPY . .
+COPY estimators/ ./estimators/
+COPY models/ ./models/
+COPY config.py main.py manage.py ./
+COPY app/ ./app/
