@@ -86,7 +86,7 @@ python -m coverage report
 
 ## Deployment
 
-This app has been deployed to Heroku with the following steps:
+This app can been deployed to Heroku so long as you choose a performance dyno due to the timeout limits with the free tier. Checkout the `deploy` branch and then follow these steps:
 
 Log in to Container Registry:
 
