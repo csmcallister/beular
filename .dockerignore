@@ -13,4 +13,7 @@ docs/
 **/*.bin
 **/rfc.joblib
 **/gbc.joblib
-**/*.npy
+**/*.npy# Elastic Beanstalk Files
+.elasticbeanstalk/*
+.git
+.gitignore
