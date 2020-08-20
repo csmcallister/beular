@@ -48,4 +48,4 @@ COPY config.py main.py manage.py ./
 COPY app/ ./app/
 
 EXPOSE 5000
-CMD gunicorn -t 2400 -b 0.0.0.0:5000 main:app
+CMD gunicorn -t 2400 -b 0.0.0.0 main:app
