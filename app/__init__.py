@@ -4,6 +4,22 @@ import os
 from os import path
 
 from flask import Flask, render_template
+import nltk
+
+try:
+    nltk.data.find('wordnet')
+except LookupError:
+    nltk.download('wordnet', quiet=True)
+
+try:
+    nltk.data.find('punkt')
+except LookupError:
+    nltk.download('punkt', quiet=True)
+
+try:
+    nltk.data.find('averaged_perceptron_tagger')
+except LookupError:
+    nltk.download('averaged_perceptron_tagger', quiet=True)
 
 from config import Config
 

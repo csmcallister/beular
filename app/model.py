@@ -1,6 +1,9 @@
+import asyncio
 import base64
 import re
 
+import aiohttp
+import async_timeout
 import contractions
 import eli5
 from eli5.formatters import format_as_html
@@ -13,6 +16,9 @@ import numpy as np
 import requests
 from sklearn import metrics
 import textract
+
+
+loop = asyncio.get_event_loop()
 
 clause_regex = re.compile((
     r'(\n\s{0,}('
@@ -45,6 +51,12 @@ stopwords = {
     'whom', 't', 'being', 'if', 'theirs', 'my', 'against', 'a', 'by',
     'doing', 'it', 'how', 'further', 'was', 'here', 'than'
 }
+
+
+async def fetch(url, data):
+    async with aiohttp.ClientSession() as session, async_timeout.timeout(10):
+        async with session.post(url, data=data) as response:
+            return await response.json()
 
 
 def get_wordnet_pos(treebank_tag):
@@ -226,22 +238,43 @@ def sklearn_api_predict(lines, current_app):
     y_preds = []
     y_probs = []
     explanations = []
-    for line in lines:
-        # model wants csv content, so prevent issues
-        line = line.replace(",", "").replace("\n", "")
-        r = requests.post(uri, data=line.encode(encoding='utf-8'))
-        data = r.json()[0]
+    
+    
+    async_data = [l.replace(",", "").replace("\n", "").encode(encoding='utf-8') for l in lines]
+    tasks = [fetch(uri, data=d) for d in async_data]
+    responses = loop.run_until_complete(asyncio.gather(*tasks))
+
+    for i, r in enumerate(responses):
+        data = r[0]
         y_preds.append(int(data.get('prediction')))
         y_probs.append(data.get('pred_prob'))
         base64_expl_bytes = data.get('expl').encode('utf-8')
         expl = base64.b64decode(base64_expl_bytes).decode('utf-8')
         explanations.append(expl)
+    
     data = zip(y_preds, lines, lines, y_probs, explanations)
     results = [
         dict(
             y_pred=y, line=l, clean_line=cl, y_prob=y_prob, expl=expl
         ) for y, l, cl, y_prob, expl in data
     ]
+    
+    # for line in lines:
+    #     # model wants csv content, so prevent issues
+    #     line = line.replace(",", "").replace("\n", "")
+    #     r = requests.post(uri, data=line.encode(encoding='utf-8'))
+    #     data = r.json()[0]
+    #     y_preds.append(int(data.get('prediction')))
+    #     y_probs.append(data.get('pred_prob'))
+    #     base64_expl_bytes = data.get('expl').encode('utf-8')
+    #     expl = base64.b64decode(base64_expl_bytes).decode('utf-8')
+    #     explanations.append(expl)
+    # data = zip(y_preds, lines, lines, y_probs, explanations)
+    # results = [
+    #     dict(
+    #         y_pred=y, line=l, clean_line=cl, y_prob=y_prob, expl=expl
+    #     ) for y, l, cl, y_prob, expl in data
+    # ]
     return results
 
 
