@@ -86,7 +86,11 @@ python -m coverage report
 
 ## Deployment
 
-This app can been deployed to Heroku so long as you choose a performance dyno due to the timeout limits with the free tier. Checkout the `deploy` branch and then follow these steps:
+This app can been deployed to Heroku so long as you choose a beefy performance dyno that can handle multiple docs at once, especially if you're deploying a model to run inside the container instead of via an API. But first, change the Dockerfile by adding the following line at the end:
+
+```Dockerfile
+CMD gunicorn -t 2400 -b 0.0.0.0:$PORT main:app
+```
 
 Log in to Container Registry:
 

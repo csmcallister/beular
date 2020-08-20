@@ -6,7 +6,8 @@ import boto3
 
 
 BUCKET = os.environ.get('BUCKET')
-s3 = boto3.client('s3')
+if BUCKET:
+    s3 = boto3.client('s3')
 
 
 def create_task(feedback):
