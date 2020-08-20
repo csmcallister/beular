@@ -60,7 +60,14 @@ And then be sure to remove that model's entry in the .dockerignore file. If usin
 
 ## Build
 
-We recommend using Docker since the `textract` dependency can be tricky to install, especially on Windows:
+For local deployment with docker-compose, remove the last two lines of the Dockerfile:
+
+```Dockerfile
+EXPOSE 5000
+CMD gunicorn -t 2400 -b 0.0.0.0:5000 main:app
+```
+
+Then build and deploy locally with:
 
 ```bash
 docker-compose up --build
@@ -85,6 +92,8 @@ python -m coverage report
 ```
 
 ## Deployment
+
+### Heroku
 
 This app can been deployed to Heroku so long as you choose a beefy performance dyno that can handle multiple docs at once, especially if you're deploying a model to run inside the container instead of via an API. But first, change the Dockerfile by adding the following line at the end:
 
@@ -120,4 +129,26 @@ Finally, open the app:
 
 ```bash
 heroku open
+```
+
+### AWS Elastic Beanstalk
+
+Use the Elastic Beanstalk CLI (EB CLI) to configure your local repository for deployment to Elastic Beanstalk:
+
+```bash
+eb init -p docker beular
+```
+
+(Optional) Use the eb local run command to build and run your container locally:
+
+```bash
+eb local run --port 5000
+```
+
+After testing your application locally, deploy it to an Elastic Beanstalk environment. Elastic Beanstalk uses the instructions in your Dockerfile to build and run the image.
+
+Use the eb create command to create an environment and deploy your application:
+
+```bash
+eb create beular-environment
 ```
