@@ -22,7 +22,7 @@ setup(
         'pandas>=1.0.5',
         'pytest==5.4.3',
         'python-dotenv==0.13.0',
-        'redis==3.3.11',
+        'redis==4.4.4',
         'rq==1.1.0',
         'requests==2.23.0',
         'scikit-learn==0.21.3',
