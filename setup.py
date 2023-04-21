@@ -14,7 +14,7 @@ setup(
         'eli5==0.10.1',
         'fasttext==0.9.2',
         'ipython==7.16.1',
-        'joblib==0.16.0',
+        'joblib==1.1.1',
         'flake8==3.8.3',
         'Flask==1.1.1',
         'matplotlib>=3.2.2',
