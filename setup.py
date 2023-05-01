@@ -16,7 +16,7 @@ setup(
         'ipython==7.16.1',
         'joblib==0.16.0',
         'flake8==3.8.3',
-        'Flask==1.1.1',
+        'Flask==2.3.2',
         'matplotlib>=3.2.2',
         'nltk==3.5',
         'pandas>=1.0.5',
